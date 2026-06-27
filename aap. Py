@@ -1,0 +1,90 @@
+import datetime
+import calendar
+
+class SalaryCalculator:
+ def __init__(self, email):
+ self.email = email
+ self.attendance_records = {}
+ self.daily_rate = 464 # ₹464 प्रति दिन
+ self.regular_hours_per_day = 8
+
+ def log_attendance(self, date, status, overtime_hours=0):
+ # स्टेटस: 'Full', 'Alt', 'Half', 'Absent', 'Sunday'
+ self.attendance_records[date] = {
+ 'status': status,
+ 'overtime': overtime_hours
+ }
+
+ def calculate_monthly_salary(self):
+ total_days_worked = 0
+ total_overtime_pay = 0
+
+ for date, record in self.attendance_records.items():
+ status = record['status']
+ overtime_hours = record['overtime']
+
+ # हाजिरी का हिसाब
+ if status in ['Full', 'Alt']:
+ total_days_worked += 1
+ elif status == 'Half':5
+ total_days_worked += 0.5
+
+ # ओवरटाइम का कैलकुलेशन
+ if overtime_hours > 0:
+ hourly_rate = self.daily_rate / self.regular_hours_per_day
+ overtime_rate = hourly_rate * 2 # डबल रेट
+ total_overtime_pay += overtime_hours * overtime_rate
+
+ regular_pay = total_days_worked * self.daily_rate
+ gross_pay = regular_pay + total_overtime_pay
+
+ # पीएफ और ईएसआई सिर्फ रेगुलर कमाई पर
+ pf_deduction = regular_pay * 0.12
+ esic_deduction = regular_pay * 0.0075
+ total_deducations = pf_deduction + esic_deduction
+
+ net_pay = gross_pay - total_deducations
+
+ return {
+ "Days Worked": total_days_worked,
+ "Regular Pay": round(regular_pay),
+ "Overtime Pay": round(total_overtime_pay),
+ "Gross Pay": round(gross_pay),
+ "PF (12%)": round(pf_deduction),
+ "ESIC (0.75%)": round(esic_deduction),
+ "Net Pay": round(net_pay)
+ }
+
+ def generate_attendance_calendar(self, year, month):
+ cal = calendar.monthcalendar(year, month)
+ month_name = calendar.month_name[month]
+ print(f"\n--- {month_name} {year} Attendance Calendar ---")
+ print("Mo Tu We Th Fr Sa Su")
+ 
+ for week in cal:
+ week_str = ""
+ for day in week:
+ if day == 0:
+ week_str += " "
+ else:
+ date_str = f"{year}-{month:02d}-{day:02d}"
+ record = self.attendance_records.get(date_str)
+ 
+ symbol = " "
+ if record:
+ status = record['status']
+ ot = record['overtime']
+ 
+ if status in ['Full', 'Alt']:
+ symbol = "✔️ "
+ elif status == 'Half':
+ symbol = "½ "
+ elif status == 'Sunday':
+ symbol = "S "
+ 
+ if ot > 0:
+ symbol = "OT"
+ 
+ week_str += f"{day:2d}{symbol}"
+ print(week_str)
+
